@@ -10,8 +10,7 @@ cd ..
 
 echo "=== 2. Copying Frontend Dist to Backend Static ==="
 rm -rf backend/static
-mkdir -p backend/static
-cp -r frontend/dist/* backend/static/
+cp -r frontend/dist backend/static
 
 echo "=== 3. Installing Backend Dependencies ==="
 cd backend
