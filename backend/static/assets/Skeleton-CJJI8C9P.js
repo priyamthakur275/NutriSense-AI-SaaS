@@ -1,1 +1,0 @@
-import{l as e}from"./react-vendor-ByqpSzI8.js";import{s as t}from"./index-DeuxW2ar.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`div`,{className:t(`animate-pulse rounded-md bg-secondary/70`,e),...r})}export{r as t};
