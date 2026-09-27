@@ -1,9 +1,8 @@
 services:
   - type: web
     name: nutrisense-ai
-    env: python
-    buildCommand: "chmod +x build.sh && ./build.sh"
-    startCommand: "cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    env: docker
+    dockerfilePath: Dockerfile
     plan: free
     healthCheckPath: /api/v1/health
     envVars:
@@ -23,6 +22,8 @@ services:
         value: gemini
       - key: GEMINI_MODEL
         value: gemini-2.0-flash
+      - key: GEMINI_API_KEY
+        sync: false
 
 databases:
   - name: nutrisense-db

@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = r"c:\Users\priya\Downloads\nutrisense-ai (2)"
 frontend_dir = os.path.join(base_dir, "frontend")
 backend_dir = os.path.join(base_dir, "backend")
 

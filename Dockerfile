@@ -2,7 +2,7 @@
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci || npm install
 COPY frontend/ .
 RUN npm run build
 
@@ -26,4 +26,4 @@ COPY --from=frontend-builder /app/frontend/dist ./static
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python -c \"import time, os, sqlalchemy; print('Checking DB connection...'); db=os.getenv('DATABASE_URL','').replace('postgres://','postgresql://',1); engine=sqlalchemy.create_engine(db); conn=None; [time.sleep(3) for i in range(10) if not conn and not (lambda: [setattr(locals(),'conn',engine.connect()), print('DB ready!')] if True else None)()]\" || true; alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
