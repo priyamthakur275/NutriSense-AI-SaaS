@@ -1,32 +1,37 @@
 services:
   - type: web
     name: nutrisense-ai
-    env: docker
-    dockerfilePath: Dockerfile
+    env: python
     plan: free
+    branch: main
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
+    autoDeploy: true
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: DEBUG
         value: "false"
+      - key: PYTHON_VERSION
+        value: "3.12.11"
+      - key: NODE_VERSION
+        value: "22.22.0"
       - key: SECRET_KEY
-        generateValue: true
+        sync: false
       - key: DATABASE_URL
-        fromDatabase:
-          name: nutrisense-db
-          property: connectionString
+        sync: false
       - key: CORS_ORIGINS
-        value: '["*"]'
+        value: '["https://nutrisense-ai-x3cl.onrender.com"]'
       - key: AI_PROVIDER
         value: gemini
+      - key: AI_FALLBACK_PROVIDERS
+        value: '["openai"]'
       - key: GEMINI_MODEL
         value: gemini-2.0-flash
       - key: GEMINI_API_KEY
         sync: false
-
-databases:
-  - name: nutrisense-db
-    plan: free
-    databaseName: nutrisense
-    user: nutrisense
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_API_KEY
+        sync: false
