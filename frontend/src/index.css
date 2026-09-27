@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 158 64% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 158 64% 95%;
+    --accent-foreground: 158 64% 30%;
+    --border: 214 32% 91%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --primary: 158 64% 50%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 222 47% 14%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 47% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 158 40% 16%;
+    --accent-foreground: 158 64% 70%;
+    --border: 222 47% 18%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-white/20 dark:border-white/[0.08];
+  }
+
+  .bg-grid {
+    background-image: linear-gradient(hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-emerald-400 to-teal-400;
+  }
+
+  .glow {
+    box-shadow: 0 0 0 1px hsl(var(--border)), 0 8px 30px -10px hsl(var(--primary) / 0.25);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

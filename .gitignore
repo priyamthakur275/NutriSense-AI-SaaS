@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.db
+*.sqlite
+*.sqlite3
+
+# Node / JS
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+
+# Environment & Secrets
+.env
+.env.prod
+*.pem
+*.key
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Build / Temp artifacts
+/scratch/
