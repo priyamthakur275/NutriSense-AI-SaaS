@@ -16,7 +16,4 @@ echo "=== 3. Installing Backend Dependencies ==="
 cd backend
 pip install --no-cache-dir -r requirements.txt
 
-echo "=== 4. Running Alembic Database Migrations ==="
-alembic upgrade head
-
 echo "=== Build Completed Successfully! ==="
