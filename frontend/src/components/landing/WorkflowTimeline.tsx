@@ -18,7 +18,7 @@ export function WorkflowTimeline() {
         <SectionHeading
           eyebrow="How it works"
           title="From tray to insight in six steps"
-          description="A single, automated pipeline — no manual bottlenecks."
+          description="What happens between the photo and the recommendation."
         />
 
         <div className="relative mt-20">

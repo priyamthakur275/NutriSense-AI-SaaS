@@ -85,8 +85,8 @@ export function Features() {
       <div className="mx-auto max-w-7xl">
         <SectionHeading
           eyebrow="Platform"
-          title="Everything institutions need"
-          description="A single platform that unifies recognition, compliance, attendance, and decision-making."
+          title="From the serving counter to the audit file"
+          description="Recognition, compliance, attendance and reporting in one place, so nothing is re-typed between systems."
         />
 
         <div className="mt-16 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

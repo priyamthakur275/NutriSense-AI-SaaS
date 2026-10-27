@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Bot, Eye, ShieldCheck, LineChart, Sparkles, MessageSquareText, Building2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/landing/SectionHeading";
 
 const capabilities = [
@@ -47,6 +48,13 @@ const capabilities = [
   },
 ];
 
+/** Stretch the final cell so the grid never ends in an empty gap. */
+function lastCellSpan(n: number) {
+  const md = n % 2 === 1 ? "md:col-span-2" : "";
+  const lg = ["lg:col-span-1", "lg:col-span-3", "lg:col-span-2"][n % 3];
+  return `${md} ${lg}`;
+}
+
 export function AICapabilities() {
   return (
     <section id="ai-capabilities" className="relative overflow-hidden px-6 py-24">
@@ -55,8 +63,8 @@ export function AICapabilities() {
       <div className="mx-auto max-w-7xl">
         <SectionHeading
           eyebrow="Artificial Intelligence"
-          title="A full agentic AI stack"
-          description="Not just recognition — a coordinated system of specialized agents that reason, plan, and recommend."
+          title="Agents that read the tray, then plan the menu"
+          description="Recognition is step one. Separate agents check the result against dietary standards, spot trends and propose fixes you can approve."
         />
 
         <div className="mt-16 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2 lg:grid-cols-3">
@@ -67,7 +75,7 @@ export function AICapabilities() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.4, delay: (i % 3) * 0.08 }}
-              className="group relative bg-card p-7"
+              className={cn("group relative bg-card p-7", i === capabilities.length - 1 && lastCellSpan(capabilities.length))}
             >
               <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-primary">
                 <cap.icon size={20} />

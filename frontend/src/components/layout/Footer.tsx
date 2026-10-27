@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input";
 const columns = [
   {
     title: "Product",
-    links: ["Features", "AI Capabilities", "Analytics", "Security", "Pricing"],
+    links: ["Features", "AI Capabilities", "Analytics", "Security", "FAQ"],
   },
   {
     title: "Company",
@@ -23,7 +23,7 @@ const columns = [
 ];
 
 const socials = [
-  { icon: Code2, href: "https://github.com", label: "GitHub" },
+  { icon: Code2, href: "https://github.com/priyamthakur275/NutriSense-AI-SaaS", label: "GitHub" },
   { icon: MessageCircle, href: "https://twitter.com", label: "Twitter" },
   { icon: Globe, href: "https://linkedin.com", label: "LinkedIn" },
 ];

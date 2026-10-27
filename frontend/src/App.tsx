@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
+import { useThemeStore } from "@/store/themeStore";
 import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
@@ -42,11 +43,13 @@ function DashboardPageFallback() {
 const queryClient = new QueryClient();
 
 export default function App() {
+  const theme = useThemeStore((s) => s.theme);
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Toaster
           position="top-right"
+          theme={theme}
           richColors
           closeButton
           toastOptions={{

@@ -14,7 +14,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         htmlFor={id}
         className={cn("inline-flex select-none items-center gap-2 text-sm text-muted-foreground", className)}
       >
-        <span className="relative inline-flex h-4.5 w-4.5 flex-shrink-0">
+        <span className="relative inline-flex h-[18px] w-[18px] flex-shrink-0">
           <input
             id={id}
             ref={ref}
