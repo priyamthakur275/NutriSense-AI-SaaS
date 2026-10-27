@@ -12,6 +12,16 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    // Forward API + WebSocket calls to the local FastAPI backend so the
+    // browser talks to one address (same as production, where FastAPI
+    // serves the built SPA).
+    proxy: {
+      "/api": {
+        target: process.env.VITE_BACKEND_URL || "http://127.0.0.1:8000",
+        changeOrigin: true,
+        ws: true,
+      },
+    },
   },
   build: {
     rollupOptions: {

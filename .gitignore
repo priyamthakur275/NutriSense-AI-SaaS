@@ -28,7 +28,10 @@ dist-ssr/
 *.key
 
 # IDE / OS
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 .DS_Store
 Thumbs.db
@@ -36,3 +39,7 @@ Thumbs.db
 
 # Build / Temp artifacts
 /scratch/
+
+# Local runner
+.venv/
+.run-logs/
