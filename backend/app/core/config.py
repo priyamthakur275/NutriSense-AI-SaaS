@@ -45,7 +45,9 @@ class Settings(BaseSettings):
     RATE_LIMIT_REGISTER_PER_MINUTE: int = 3
 
     # --- Database ---
-    DATABASE_URL: str = "postgresql://nutrisense:nutrisense@localhost:5432/nutrisense"
+    # Local default is a zero-setup SQLite file; production must set a
+    # PostgreSQL DATABASE_URL (enforced in model_post_init below).
+    DATABASE_URL: str = "sqlite:///./nutrisense.db"
     # Pool tuning — ignored automatically for SQLite (NullPool), applied for Postgres.
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20

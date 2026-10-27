@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "NutriSense: Run (backend + frontend)",
+      "type": "shell",
+      "command": "python3 run.py",
+      "windows": { "command": "py -3 run.py" },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "NutriSense: Backend only",
+      "type": "shell",
+      "command": "python3 run.py --backend-only",
+      "windows": { "command": "py -3 run.py --backend-only" },
+      "problemMatcher": []
+    },
+    {
+      "label": "NutriSense: Setup / repair only",
+      "type": "shell",
+      "command": "python3 run.py --setup-only",
+      "windows": { "command": "py -3 run.py --setup-only" },
+      "problemMatcher": []
+    },
+    {
+      "label": "NutriSense: Backend tests",
+      "type": "shell",
+      "command": "backend/.venv/bin/python -m pytest backend/tests -q",
+      "windows": { "command": "backend\\.venv\\Scripts\\python -m pytest backend\\tests -q" },
+      "problemMatcher": []
+    }
+  ]
+}
