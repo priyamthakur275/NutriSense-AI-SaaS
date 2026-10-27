@@ -38,7 +38,7 @@ export function Security() {
           <SectionHeading
             align="left"
             eyebrow="Security"
-            title="Institution-grade security, by default"
+            title="Student data stays locked down"
             description="Handling nutrition and attendance data for thousands of students demands more than best-effort security. NutriSense AI is built with encryption, RBAC, and full auditability from day one."
           />
 

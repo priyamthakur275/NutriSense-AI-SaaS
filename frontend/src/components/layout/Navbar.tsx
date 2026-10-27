@@ -13,7 +13,7 @@ const navLinks = [
   { label: "Workflow", href: "#workflow" },
   { label: "Analytics", href: "#analytics" },
   { label: "Security", href: "#security" },
-  { label: "Pricing", href: "#faq" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 export function Navbar() {
@@ -67,7 +67,7 @@ export function Navbar() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
             <Leaf size={18} />
           </span>
-          NutriSense <span className="text-primary">AI</span>
+          NutriSense AI
         </Link>
 
         <nav className="hidden items-center gap-1 rounded-full border border-border/60 bg-secondary/40 px-1.5 py-1.5 md:flex">
@@ -96,7 +96,7 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2 md:flex">
           <a
-            href="https://github.com"
+            href="https://github.com/priyamthakur275/NutriSense-AI-SaaS"
             target="_blank"
             rel="noreferrer"
             aria-label="GitHub repository"

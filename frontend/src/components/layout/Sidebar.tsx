@@ -39,10 +39,10 @@ export function Sidebar() {
       <motion.aside
         animate={{ width: sidebarCollapsed ? 76 : 256 }}
         transition={{ duration: 0.25, ease: "easeInOut" }}
-        className="relative hidden flex-shrink-0 flex-col border-r border-border bg-card md:flex"
+        className="relative hidden flex-shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex"
       >
-        <div className="flex h-16 items-center gap-2 overflow-hidden border-b border-border px-5 font-semibold">
-          <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <div className="flex h-16 items-center gap-2.5 overflow-hidden border-b border-white/[0.07] px-5 font-semibold text-[#F5F7F2]">
+          <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-[#E3A21A] text-[#12261D]">
             <Leaf size={18} />
           </span>
           {!sidebarCollapsed && <span className="whitespace-nowrap">NutriSense AI</span>}
@@ -60,8 +60,8 @@ export function Sidebar() {
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     sidebarCollapsed && "justify-center px-0",
                     isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      ? "bg-sidebar-active text-[#F5F7F2] shadow-[inset_3px_0_0_#E3A21A]"
+                      : "text-sidebar-muted hover:bg-white/[0.05] hover:text-sidebar-foreground"
                   )
                 }
               >
@@ -83,7 +83,7 @@ export function Sidebar() {
         <button
           onClick={toggleSidebar}
           aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="flex h-12 items-center justify-center gap-2 border-t border-border text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="flex h-12 items-center justify-center gap-2 border-t border-white/[0.07] text-sm text-sidebar-muted transition-colors hover:bg-white/[0.05] hover:text-sidebar-foreground"
         >
           {sidebarCollapsed ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}
           {!sidebarCollapsed && "Collapse"}

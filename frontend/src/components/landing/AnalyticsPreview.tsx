@@ -8,7 +8,7 @@ const kpis = [
   { label: "Avg. Compliance", value: 92.4, suffix: "%", trend: "up", decimals: 1 },
   { label: "Meals / Day", value: 1284, suffix: "", trend: "up" },
   { label: "Nutrient Gaps", value: 6, suffix: "", trend: "down" },
-  { label: "Active Institutions", value: 41, suffix: "", trend: "flat" },
+  { label: "Menus adjusted", value: 12, suffix: "", trend: "flat" },
 ];
 
 const nutrients = [
@@ -33,8 +33,8 @@ export function AnalyticsPreview() {
       <div className="mx-auto max-w-7xl">
         <SectionHeading
           eyebrow="Analytics"
-          title="Data that drives decisions"
-          description="Every meal becomes a data point — trends, gaps, and forecasts, always up to date."
+          title="Every meal becomes a data point"
+          description="Trends, nutrient gaps and forecasts, updated as each tray is scanned."
         />
 
         <div className="mt-14 grid grid-cols-2 gap-4 md:grid-cols-4">

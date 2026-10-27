@@ -1,244 +1,169 @@
-import { useRef } from "react";
-import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Sparkles, Camera, ShieldCheck, TrendingUp, Play } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { AnimatedCounter } from "@/components/landing/AnimatedCounter";
 
-const floatingCards = [
-  {
-    icon: Camera,
-    title: "Tray Scanned",
-    subtitle: "6 items detected",
-    className: "left-[-4%] top-[14%] md:left-[-8%]",
-    delay: 0.5,
-  },
-  {
-    icon: ShieldCheck,
-    title: "Compliance",
-    subtitle: "94% · WHO / FSSAI",
-    className: "right-[-4%] top-[6%] md:right-[-9%]",
-    delay: 0.7,
-  },
-  {
-    icon: TrendingUp,
-    title: "Protein intake",
-    subtitle: "+12% this week",
-    className: "right-[2%] bottom-[8%] md:right-[-4%]",
-    delay: 0.9,
-  },
+/* One sample tray. Values are per serving and illustrative: they show what a
+   scan returns, not a claim about any real institution. */
+const detections = [
+  { label: "Jeera rice", conf: 96, x: 22, y: 30, w: 168, h: 196 },
+  { label: "Dal tadka", conf: 93, x: 206, y: 30, w: 118, h: 96 },
+  { label: "Aloo gobi", conf: 89, x: 340, y: 30, w: 118, h: 96 },
+  { label: "Roti ×2", conf: 94, x: 206, y: 140, w: 118, h: 86 },
+  { label: "Curd", conf: 91, x: 340, y: 140, w: 118, h: 86 },
 ];
 
-const institutions = ["BMSCE", "Apollo Hospitals", "NIT Trichy", "Tata Canteens", "Akshaya Patra"];
+const nutrients = [
+  { label: "Energy", value: "642 kcal", pct: 92 },
+  { label: "Protein", value: "19 g", pct: 76 },
+  { label: "Iron", value: "3.1 mg", pct: 41, low: true },
+  { label: "Calcium", value: "212 mg", pct: 62 },
+];
+
+const audiences = ["School midday meals", "College hostels", "Hospital kitchens", "Corporate canteens"];
+
+function Tray({ reduce }: { reduce: boolean }) {
+  return (
+    <svg viewBox="0 0 480 256" className="h-auto w-full" role="img" aria-label="Top-down photo of a steel meal tray with rice, dal, aloo gobi, two rotis and curd, each outlined by the detector">
+      <defs>
+        <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#E9EDEA" />
+          <stop offset="0.5" stopColor="#C9D0CC" />
+          <stop offset="1" stopColor="#E3E8E5" />
+        </linearGradient>
+        <linearGradient id="well" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#B7BFBA" />
+          <stop offset="1" stopColor="#D8DEDA" />
+        </linearGradient>
+        <pattern id="rice" width="9" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-18)">
+          <rect width="9" height="7" fill="#F4EFE2" />
+          <ellipse cx="3" cy="2" rx="2.6" ry="0.9" fill="#FFFDF6" />
+          <ellipse cx="7" cy="5" rx="2.6" ry="0.9" fill="#E9E1CC" />
+          <circle cx="7.5" cy="1.5" r="0.5" fill="#6B4E2E" />
+        </pattern>
+      </defs>
+      {/* tray */}
+      <rect x="6" y="14" width="468" height="228" rx="26" fill="url(#steel)" stroke="#AEB6B1" />
+      {/* wells */}
+      <rect x="22" y="30" width="168" height="196" rx="18" fill="url(#well)" />
+      <rect x="28" y="36" width="156" height="184" rx="14" fill="url(#rice)" />
+      <rect x="206" y="30" width="118" height="96" rx="16" fill="url(#well)" />
+      <ellipse cx="265" cy="78" rx="50" ry="38" fill="#E0A21F" />
+      <ellipse cx="258" cy="70" rx="30" ry="16" fill="#EDB84A" opacity="0.7" />
+      <circle cx="248" cy="86" r="3" fill="#7A3E12" /><circle cx="281" cy="66" r="2.4" fill="#2F6B2F" /><circle cx="270" cy="92" r="2" fill="#7A3E12" />
+      <rect x="340" y="30" width="118" height="96" rx="16" fill="url(#well)" />
+      {[[366, 62, 13], [392, 56, 11], [420, 66, 14], [378, 92, 12], [408, 94, 13], [434, 92, 9]].map(([cx, cy, r], i) => (
+        <circle key={i} cx={cx} cy={cy} r={r} fill={i % 2 ? "#F2D27A" : "#E8C35A"} stroke="#C99A2E" strokeWidth="1" />
+      ))}
+      {[[384, 74], [414, 80], [398, 68]].map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r="3" fill="#3C7D3C" />)}
+      <rect x="206" y="140" width="118" height="86" rx="16" fill="url(#well)" />
+      <circle cx="250" cy="183" r="34" fill="#D9A866" stroke="#B9874A" />
+      <circle cx="282" cy="186" r="32" fill="#E2B575" stroke="#B9874A" />
+      {[[270, 172], [290, 196], [262, 200], [298, 176]].map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r="3.2" fill="#8E5A2B" opacity="0.55" />)}
+      <rect x="340" y="140" width="118" height="86" rx="16" fill="url(#well)" />
+      <ellipse cx="399" cy="183" rx="46" ry="32" fill="#FBFAF5" stroke="#E2E0D6" />
+      <ellipse cx="388" cy="176" rx="16" ry="7" fill="#FFFFFF" />
+
+      {/* detections */}
+      {detections.map((d, i) => (
+        <motion.g
+          key={d.label}
+          initial={reduce ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: reduce ? 0 : 1.1 + i * 0.22, duration: 0.3 }}
+        >
+          <rect x={d.x + 2} y={d.y + 2} width={d.w - 4} height={d.h - 4} rx="14" fill="none" stroke="#1E7A4C" strokeWidth="2.5" />
+          <rect x={d.x + 8} y={d.y + 8} width={d.label.length * 6.4 + 34} height="19" rx="9.5" fill="#12261D" />
+          <text x={d.x + 16} y={d.y + 21.5} fill="#F5F7F2" fontSize="10.5" fontWeight="600" fontFamily="Geist Variable, Geist, sans-serif">
+            {d.label}
+            <tspan fill="#9FD3B4" dx="5">{d.conf}%</tspan>
+          </text>
+        </motion.g>
+      ))}
+    </svg>
+  );
+}
 
 export function Hero() {
   const navigate = useNavigate();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    mouseX.set(e.clientX - rect.left);
-    mouseY.set(e.clientY - rect.top);
-  }
-
-  const spotlight = useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, hsl(var(--primary) / 0.10), transparent 80%)`;
+  const reduce = !!useReducedMotion();
 
   return (
-    <section
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      className="relative overflow-hidden px-6 pb-20 pt-24 md:pb-28 md:pt-32"
-    >
-      {/* Background layers */}
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-grid [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)] opacity-[0.35]" />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,hsl(var(--primary)/0.18),transparent)]" />
-      <motion.div
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{ backgroundImage: spotlight }}
-      />
-
-      <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6 flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-4 py-1.5 text-xs font-medium text-muted-foreground glow"
-        >
-          <Sparkles size={14} className="text-primary" />
-          Agentic AI for institutional nutrition
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.05 }}
-          className="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl"
-        >
-          Nutrition monitoring, <br className="hidden md:block" />
-          <span className="text-gradient">automated end-to-end.</span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground"
-        >
-          NutriSense AI turns meal-tray images into compliance-scored
-          nutrition data — with attendance tracking, dietary-standard
-          checks, and multi-agent recommendations, all in one dashboard.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.22 }}
-          className="mt-10 flex flex-col gap-3 sm:flex-row"
-        >
-          <Button size="lg" onClick={() => navigate("/register")} className="shadow-lg shadow-primary/20">
-            Start free <ArrowRight size={16} />
-          </Button>
-          <Button size="lg" variant="outline">
-            <Play size={16} /> Watch demo
-          </Button>
-        </motion.div>
-
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-16 grid grid-cols-3 gap-8 border-y border-border/60 py-6 sm:gap-16"
-        >
-          {[
-            { value: 2, suffix: "M+", label: "Meals analyzed" },
-            { value: 99.5, suffix: "%", label: "Uptime SLA", decimals: 1 },
-            { value: 40, suffix: "+", label: "Institutions" },
-          ].map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center">
-              <AnimatedCounter
-                value={stat.value}
-                suffix={stat.suffix}
-                decimals={stat.decimals ?? 0}
-                className="text-2xl font-bold tabular-nums md:text-3xl"
-              />
-              <span className="mt-1 text-xs text-muted-foreground md:text-sm">
-                {stat.label}
-              </span>
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
-      {/* Product mockup with floating cards */}
-      <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.8, delay: 0.35 }}
-        className="relative mx-auto mt-20 max-w-5xl"
-      >
-        <div className="pointer-events-none absolute -inset-x-10 -inset-y-10 -z-10 bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,hsl(var(--primary)/0.15),transparent)] blur-2xl" />
-
-        <div className="glow overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="flex items-center gap-1.5 border-b border-border bg-secondary/40 px-4 py-3">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-            <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-            <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-            <span className="ml-4 rounded-md bg-background px-3 py-1 text-xs text-muted-foreground">
-              app.nutrisense.ai/dashboard
-            </span>
+    <section className="relative overflow-hidden px-5 pb-20 pt-28 md:px-8 md:pb-28 md:pt-36">
+      <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:gap-16">
+        <div className="max-w-xl">
+          <h1 className="font-display text-[2.6rem] font-extrabold leading-[0.98] tracking-[-0.035em] text-foreground sm:text-6xl lg:text-[4.6rem]">
+            Know what every plate actually served.
+          </h1>
+          <p className="mt-7 max-w-[34rem] text-lg leading-relaxed text-muted-foreground">
+            Photograph a meal tray. NutriSense identifies each dish, estimates the portion and
+            scores the meal against ICMR-NIN and FSSAI guidelines, so your kitchen can close
+            nutrient gaps before the next service.
+          </p>
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Button size="lg" onClick={() => navigate("/register")} className="h-12 px-6 text-[15px]">
+              Create a free account
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/login")} className="h-12 px-6 text-[15px]">
+              Sign in
+            </Button>
           </div>
-          <div className="grid grid-cols-1 gap-px bg-border md:grid-cols-3">
-            <div className="col-span-1 space-y-3 bg-card p-6 md:col-span-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold">Today's compliance</p>
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  Live
-                </span>
-              </div>
-              <div className="flex h-40 items-end gap-2">
-                {[52, 68, 44, 80, 63, 91, 74].map((h, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ height: 0 }}
-                    whileInView={{ height: `${h}%` }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: i * 0.06, ease: "easeOut" }}
-                    className="flex-1 rounded-t-md bg-gradient-to-t from-primary/80 to-primary/30"
-                  />
-                ))}
-              </div>
+          <div className="mt-12 border-t border-border pt-6">
+            <p className="text-sm text-muted-foreground">Built for</p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {audiences.map((a) => (
+                <li key={a} className="rounded-full border border-border bg-card px-3.5 py-1.5 text-sm font-medium text-foreground">
+                  {a}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Scanner */}
+        <div className="relative">
+          <div className="rounded-[28px] bg-sidebar p-3 shadow-[0_40px_80px_-40px_rgba(18,38,29,0.55)] ring-1 ring-black/5 dark:ring-white/10 sm:p-4">
+            <div className="flex items-center justify-between px-2 pb-3 pt-1 text-[13px] text-sidebar-muted">
+              <span className="font-medium text-sidebar-foreground">Lunch, Hostel block C</span>
+              <span className="tabular">Tray 214 of 380</span>
             </div>
-            <div className="col-span-1 space-y-4 bg-card p-6">
-              {[
-                { label: "Protein", value: 82 },
-                { label: "Iron", value: 61 },
-                { label: "Calcium", value: 74 },
-              ].map((n) => (
-                <div key={n.label}>
-                  <div className="mb-1 flex justify-between text-xs">
-                    <span className="text-muted-foreground">{n.label}</span>
-                    <span className="font-medium">{n.value}%</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${n.value}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                      className="h-full rounded-full bg-primary"
-                    />
+            <div className="relative overflow-hidden rounded-[20px] bg-[#DDE3DF]">
+              <Tray reduce={reduce} />
+              {!reduce && (
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-full">
+                  <div className="animate-tray-scan h-16 w-full bg-gradient-to-b from-transparent via-[#E3A21A]/35 to-transparent">
+                    <div className="h-full border-b-2 border-[#E3A21A]" />
                   </div>
                 </div>
-              ))}
+              )}
             </div>
+
+            <motion.div
+              initial={reduce ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: reduce ? 0 : 2.4, duration: 0.4 }}
+              className="mt-3 grid gap-3 rounded-[20px] bg-sidebar-active p-4 sm:grid-cols-[1fr_auto]"
+            >
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+                {nutrients.map((n) => (
+                  <div key={n.label}>
+                    <dt className="text-xs text-sidebar-muted">{n.label}</dt>
+                    <dd className="tabular mt-0.5 text-[15px] font-semibold text-sidebar-foreground">{n.value}</dd>
+                    <div className="mt-2 h-1 rounded-full bg-white/10">
+                      <div
+                        className={n.low ? "h-full rounded-full bg-[#E3A21A]" : "h-full rounded-full bg-[#5DB585]"}
+                        style={{ width: `${n.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </dl>
+              <p className="max-w-[13rem] self-center rounded-xl bg-[#E3A21A]/15 px-3 py-2 text-[13px] leading-snug text-[#F2C866]">
+                Iron is at 41% of the meal target. Add greens or jaggery to dinner.
+              </p>
+            </motion.div>
           </div>
         </div>
-
-        {floatingCards.map((card) => (
-          <motion.div
-            key={card.title}
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.6, delay: card.delay }}
-            whileHover={{ y: -4 }}
-            className={`glass absolute hidden w-48 rounded-xl p-3 shadow-xl md:flex ${card.className}`}
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <card.icon size={16} />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{card.title}</p>
-                <p className="truncate text-xs text-muted-foreground">{card.subtitle}</p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-
-      {/* Trusted by */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="mx-auto mt-24 flex max-w-4xl flex-col items-center gap-6"
-      >
-        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          Trusted by institutions across India
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-70 grayscale">
-          {institutions.map((name) => (
-            <span key={name} className="text-sm font-semibold md:text-base">
-              {name}
-            </span>
-          ))}
-        </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

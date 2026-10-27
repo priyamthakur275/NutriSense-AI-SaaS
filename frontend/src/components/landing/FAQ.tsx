@@ -46,7 +46,7 @@ export function FAQ() {
         <SectionHeading
           eyebrow="FAQ"
           title="Frequently asked questions"
-          description="Everything you need to know before rolling out NutriSense AI."
+          description="What teams usually ask before their first week."
         />
 
         <div className="mt-12 flex flex-col gap-3">

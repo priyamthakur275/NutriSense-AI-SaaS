@@ -21,6 +21,11 @@ export default function OverviewPage() {
     <div className="flex flex-col gap-8">
       <WelcomeCard />
 
+      <p className="-mt-4 text-sm text-muted-foreground">
+        The cards below show sample figures so you can explore the dashboard. They switch to your
+        institution's numbers as meals are logged.
+      </p>
+
       {/* Top-level stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Meals Analyzed Today" value={1284} icon={Camera} trend="up" trendLabel="+4.2%" delay={0} />
