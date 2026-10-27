@@ -212,8 +212,8 @@ export default function MenuPlannerPage() {
         steps={[
           "Every pair of (day, dish) is a yes/no choice. With about 30 vegetarian dishes over 7 days that is roughly 200 choices.",
           "Each rule becomes a linear constraint: one grain, one dal, one sabzi per day; daily nutrients above the target; daily cost under the budget; no curry more than the repeat limit or on two days running.",
-          "A mixed-integer linear programming solver (SciPy's HiGHS) searches the combinations and returns the best valid menu, usually in under two seconds.",
-          "If no menu is possible, the planner switches off one rule at a time to find the blocker, and solves a second problem to find the smallest budget that would work.",
+          "A mixed-integer linear programming solver (SciPy's HiGHS) first finds any menu that follows every rule, a local search then swaps dishes to improve it, and a time-limited optimisation run keeps whichever is better.",
+          "If no menu is possible, the planner switches off one rule at a time to find the blocker, and solves a second problem to find the smallest budget that would work (with proven bounds if it runs out of time).",
           "Nutrient values are per standard portion, from the Indian Food Composition Tables (IFCT 2017). School targets are the PM POSHAN norms.",
         ]}
       />

@@ -46,7 +46,7 @@ every rule, either the cheapest or the most nutritious.
 **How (one sentence for an interview).** It's an optimisation problem: every
 (day, dish) pair is a yes/no variable, each rule is a linear constraint, and a
 mixed-integer linear programming solver (SciPy's HiGHS) finds the best valid
-combination in about one to three seconds.
+combination in a few seconds.
 
 ```
 variables   x[day, dish] ∈ {0, 1}
@@ -56,10 +56,20 @@ each week   same curry ≤ N times, never two days running
 objective   maximise nutrition vs targets   (or minimise cost)
 ```
 
+**Built for a slow server.** The live demo runs on a free cloud CPU, so the
+solve is done in three bounded steps: (1) a feasibility MILP finds *any* menu
+that satisfies every rule, or proves none exists; (2) a local search swaps one
+dish at a time while every rule still holds, checking each swap in microseconds;
+(3) an optimisation MILP runs for a few seconds, and the better of the two menus
+is kept. Identical requests are cached, and the default plan is pre-solved when
+the server starts.
+
 **When no menu is possible**, it doesn't just fail. It switches off one rule
 group at a time to find the blocker ("the budget"), then solves a second problem
 (minimise the most expensive day's cost) to report the **lowest budget that
-works**: "₹25 is impossible; the minimum is ₹43.45". One click applies it.
+works**: "₹25 is impossible; a menu exists at ₹43.45". If the solver runs out
+of time it says so honestly, giving a budget where a menu is *proven* to exist
+and the bound below which none can exist. One click applies it.
 
 **Data.** 32 common Indian dishes with nutrients per 100 g from the Indian Food
 Composition Tables (IFCT 2017, ICMR-NIN), standard portions and approximate
@@ -123,7 +133,7 @@ summary for the kitchen head.
 
 ## Resume bullets
 
-- Built a **budget-aware menu planner** that formulates weekly meal planning as a mixed-integer linear program (SciPy/HiGHS) over ~200 binary decisions; meets ICMR-NIN/PM POSHAN nutrient targets under a per-plate budget in 1–3 s, and diagnoses infeasible requests by computing the minimum viable budget.
+- Built a **budget-aware menu planner** that formulates weekly meal planning as a mixed-integer linear program (SciPy/HiGHS) over ~200 binary decisions; meets ICMR-NIN/PM POSHAN nutrient targets under a per-plate budget, with a feasibility-first MILP + local-search pipeline that stays responsive on a free-tier CPU; diagnoses infeasible requests with proven budget bounds.
 - Designed a **food-waste analytics module** separating over-production from plate waste, quantifying ₹ lost and the nutrient gap between served and eaten food; added an AI tray scan that compares before/after photos with a vision LLM behind a provider-failover layer.
 - Implemented a **headcount and cooking-quantity forecast** (weekday seasonality, exponentially weighted level, capped trend) with walk-forward backtesting; ~3–4% average error and better than the naive baseline in 57 of 60 simulated kitchens.
 - Shipped end to end: FastAPI + SQLAlchemy/Alembic (PostgreSQL), React/TypeScript dashboards, 20 new pytest tests (79 total), deployed on Render with Neon Postgres.

@@ -82,6 +82,7 @@ export interface PlanResult {
   solver: { method: string; variables: number; constraints: number; candidate_dishes: number; solve_ms: number; status: string };
   blockers: string[];
   cheapest_feasible_cost: number | null;
+  min_budget_lower_bound: number | null;
 }
 export interface PlanRequest {
   preset: string;

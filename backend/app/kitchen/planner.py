@@ -111,7 +111,8 @@ class PlanResult:
     explanation: list[str]
     solver: dict
     blockers: list[str] = field(default_factory=list)
-    cheapest_feasible_cost: float | None = None
+    cheapest_feasible_cost: float | None = None   # a menu is proven to exist at this budget
+    min_budget_lower_bound: float | None = None   # no menu exists below this budget
 
 
 class _Model:
@@ -198,9 +199,61 @@ class _Model:
                     c[self.idx(d, j)] = -score + 0.002 * dish.cost_per_portion
         return c
 
-    def min_budget(self, time_limit: float = 3.0) -> float | None:
+    def improve(self, x, c, *, skip: frozenset[str] = frozenset(), key=None, max_passes: int = 8):
+        """Local search: swap one dish for another of the same category on
+        one day whenever every rule still holds and the score improves.
+        Each candidate swap is checked in O(rules) using the column
+        difference A[:, new] - A[:, old], so this runs in milliseconds even
+        on a slow server. `key` overrides the score (used to lower the most
+        expensive day when searching for a minimum budget)."""
+        import numpy as np
+
+        A, lo, hi = self.build(skip=skip)
+        x = (np.asarray(x) > 0.5).astype(float)
+        Ax = A @ x
+        score = key or (lambda v: float(c @ v))
+        best = score(x)
+        cats = [dish.category for dish in self.dishes]
+        for _ in range(max_passes):
+            improved = False
+            for d in range(self.D):
+                for j_old in range(self.J):
+                    i_old = self.idx(d, j_old)
+                    if x[i_old] < 0.5:
+                        continue
+                    for j_new in range(self.J):
+                        if j_new == j_old or cats[j_new] != cats[j_old]:
+                            continue
+                        i_new = self.idx(d, j_new)
+                        if x[i_new] > 0.5:
+                            continue
+                        new_Ax = Ax - A[:, i_old] + A[:, i_new]
+                        if np.any(new_Ax < lo - 1e-6) or np.any(new_Ax > hi + 1e-6):
+                            continue
+                        x[i_old], x[i_new] = 0.0, 1.0
+                        val = score(x)
+                        if val < best - 1e-9:
+                            best, Ax, improved = val, new_Ax, True
+                            break
+                        x[i_old], x[i_new] = 1.0, 0.0
+                    if improved:
+                        break
+            if not improved:
+                break
+        return x, best
+
+    def day_costs(self, x) -> list[float]:
+        return [
+            sum(self.dishes[j].cost_per_portion for j in range(self.J) if x[self.idx(d, j)] > 0.5)
+            for d in range(self.D)
+        ]
+
+    def min_budget(self, time_limit: float = 2.5) -> tuple[float, float] | None:
         """Smallest per-plate budget for which a valid menu exists: add one
-        continuous variable z ≥ each day's cost and minimise z."""
+        continuous variable z ≥ each day's cost and minimise z. Returns
+        (guaranteed, lower_bound): a menu is proven to exist at
+        `guaranteed`, and none exists below `lower_bound`. They are equal
+        when the solver finishes; on a slow server they bracket the answer."""
         import numpy as np
         from scipy.optimize import Bounds, LinearConstraint, milp
 
@@ -227,7 +280,17 @@ class _Model:
             options={"time_limit": time_limit, "mip_rel_gap": 0.01},
         )
         if res.status in (0, 1) and res.x is not None:
-            return float(np.ceil(res.x[n] * 100) / 100)
+            x = res.x[:n]
+            # Polish: lower the most expensive day with local swaps.
+            x, _ = self.improve(
+                x, None, skip=frozenset({"budget"}),
+                key=lambda v: max(self.day_costs(v)) + 1e-4 * sum(self.day_costs(v)),
+            )
+            upper = float(np.ceil(max(self.day_costs(x)) * 100) / 100)
+            lower = float(getattr(res, "mip_dual_bound", None) or upper)
+            if res.status == 0:
+                lower = upper
+            return upper, float(np.floor(min(lower, upper) * 100) / 100)
         return None
 
     def solve(self, goal: str, time_limit: float = 3.0, gap: float = 0.02, **build_kwargs):
@@ -250,7 +313,36 @@ def _candidate_dishes(req: PlanRequest) -> list[Dish]:
     return [d for d in CATALOG.values() if d.allowed_for(req.diet) and d.key not in excluded]
 
 
+_CACHE: dict[tuple, PlanResult] = {}
+_CACHE_MAX = 128
+
+
+def _cache_key(req: PlanRequest) -> tuple:
+    return (req.preset, round(req.budget_per_plate, 2), req.diet, req.days, req.include_bread,
+            req.max_repeats, req.goal, tuple(sorted(req.exclude)))
+
+
 def plan_menu(req: PlanRequest) -> PlanResult:
+    """Cached wrapper: the same request always gets the same plan back
+    instantly (menus only depend on the request and the catalogue)."""
+    key = _cache_key(req)
+    if key not in _CACHE:
+        if len(_CACHE) >= _CACHE_MAX:
+            _CACHE.pop(next(iter(_CACHE)))
+        _CACHE[key] = _plan_menu(req)
+    return _CACHE[key]
+
+
+def warm_up() -> None:
+    """Pre-solve the default request (and import SciPy) so the first visitor
+    after a cold start doesn't wait for it."""
+    try:
+        plan_menu(PlanRequest(budget_per_plate=50))
+    except Exception:  # never let a warm-up failure affect startup
+        pass
+
+
+def _plan_menu(req: PlanRequest) -> PlanResult:
     if req.preset not in PRESETS:
         raise ValueError(f"Unknown target preset '{req.preset}'")
     if not 1 <= req.days <= 7:
@@ -259,19 +351,27 @@ def plan_menu(req: PlanRequest) -> PlanResult:
     dishes = _candidate_dishes(req)
     model = _Model(req, preset, dishes)
 
-    # Two phases, so a slow server still returns a valid menu quickly:
-    #   1. feasibility: find *any* menu that satisfies every rule (fast), or
+    # Three steps, so even a slow server returns a good, valid menu fast:
+    #   1. feasibility MILP: find *any* menu that satisfies every rule, or
     #      prove that none exists;
-    #   2. optimisation: improve it for a bounded time and keep the best
-    #      menu found (HiGHS returns its incumbent at the time limit).
+    #   2. local search: swap dishes while every rule still holds (ms);
+    #   3. optimisation MILP for a bounded time; keep whichever is better.
+    import numpy as np
+
     started = time.perf_counter()
-    feas, shape = model.solve("feasibility", time_limit=6.0, gap=0.0)
-    res, status = feas, "valid (not optimised)"
+    feas, shape = model.solve("feasibility", time_limit=4.0, gap=0.0)
+    res, status, x_best = feas, "", None
     if feas.x is not None:
-        opt, _ = model.solve(req.goal, time_limit=4.0, gap=0.05)
+        c = model.objective(req.goal)
+        x_best, best_val = model.improve(feas.x, c)
+        status = "valid, improved by local search"
+        opt, _ = model.solve(req.goal, time_limit=3.0, gap=0.05)
         if opt.x is not None:
-            res = opt
-            status = "optimal (within 5%)" if opt.status == 0 else "best found in time limit"
+            x_opt = (opt.x > 0.5).astype(float)
+            if float(c @ x_opt) <= best_val + 1e-9:
+                x_best = x_opt
+                status = "optimal (within 5%)" if opt.status == 0 else "best found in time limit"
+    res_x = None if x_best is None else np.asarray(x_best)
     elapsed_ms = (time.perf_counter() - started) * 1000
 
     targets = {
@@ -282,25 +382,27 @@ def plan_menu(req: PlanRequest) -> PlanResult:
         },
     }
     solver = {
-        "method": "Mixed-integer linear programming (SciPy / HiGHS)",
+        "method": "Mixed-integer linear programming (SciPy / HiGHS) + local search",
         "variables": int(shape[1]),
         "constraints": int(shape[0]),
         "candidate_dishes": len(dishes),
         "solve_ms": round(elapsed_ms, 1),
-        "status": status if res.x is not None else ("infeasible" if feas.status == 2 else "no menu found in time"),
+        "status": status if res_x is not None else ("infeasible" if feas.status == 2 else "no menu found in time"),
     }
 
-    if res.x is None:
+    if res_x is None:
         blockers, cheapest = _diagnose(model, req)
+        bounds = getattr(model, "min_budget_bounds", None)
         return PlanResult(
             feasible=False, days=[], average_cost=0.0, targets=targets,
-            explanation=_infeasible_text(req, preset, blockers, cheapest),
+            explanation=_infeasible_text(req, preset, blockers, bounds, proven=feas.status == 2),
             solver=solver, blockers=blockers, cheapest_feasible_cost=cheapest,
+            min_budget_lower_bound=bounds[1] if bounds else None,
         )
 
     days: list[PlannedDay] = []
     for d in range(req.days):
-        chosen = [dishes[j] for j in range(len(dishes)) if res.x[model.idx(d, j)] > 0.5]
+        chosen = [dishes[j] for j in range(len(dishes)) if res_x[model.idx(d, j)] > 0.5]
         order = [Category.GRAIN, Category.BREAD, Category.PULSE, Category.VEGETABLE, Category.SIDE]
         chosen.sort(key=lambda x: order.index(x.category))
         totals = {n: round(sum(x.per_portion(n) for x in chosen), 1) for n in NUTRIENTS}
@@ -325,11 +427,13 @@ def _diagnose(model: _Model, req: PlanRequest) -> tuple[list[str], float | None]
     groups = ["budget", "variety", "energy", *model.preset.minimums.keys()]
     blockers = []
     for g in groups:
-        res, _ = model.solve("feasibility", time_limit=1.5, gap=0.0, skip=frozenset({g}))
+        res, _ = model.solve("feasibility", time_limit=1.0, gap=0.0, skip=frozenset({g}))
         if res.status in (0, 1) and res.x is not None:
             blockers.append(g)
 
-    cheapest = model.min_budget() if "budget" in blockers else None
+    bounds = model.min_budget() if "budget" in blockers else None
+    cheapest = bounds[0] if bounds else None
+    model.min_budget_bounds = bounds
     return blockers, cheapest
 
 
@@ -341,15 +445,25 @@ def _rule_name(group: str) -> str:
     }.get(group, f"the {NUTRIENT_LABELS.get(group, (group,))[0].lower()} target")
 
 
-def _infeasible_text(req, preset, blockers, cheapest) -> list[str]:
+def _infeasible_text(req, preset, blockers, bounds, proven: bool = True) -> list[str]:
+    where = (f"for “{preset.label}” at ₹{req.budget_per_plate:.0f} per plate "
+             f"with a {req.diet.value.replace('_', '-')} diet")
     lines = [
-        f"No {req.days}-day menu meets every rule for “{preset.label}” at ₹{req.budget_per_plate:.0f} per plate "
-        f"with a {req.diet.value.replace('_', '-')} diet."
+        f"No {req.days}-day menu meets every rule {where}." if proven else
+        f"The solver couldn't find a {req.days}-day menu that meets every rule {where} within its time limit. "
+        "This budget is right at the edge of what's possible."
     ]
     if blockers:
         lines.append("Relaxing any one of these would make a menu possible: " + "; ".join(_rule_name(b) for b in blockers) + ".")
-    if cheapest is not None and "budget" in blockers:
-        lines.append(f"The lowest budget that meets every nutrition and variety rule is about ₹{cheapest:.2f} per plate.")
+    if bounds and "budget" in blockers:
+        upper, lower = bounds
+        if upper - lower < 0.5:
+            lines.append(f"The lowest budget that meets every nutrition and variety rule is ₹{upper:.2f} per plate.")
+        else:
+            lines.append(
+                f"A menu that meets every rule exists at ₹{upper:.2f} per plate. The solver also proved "
+                f"none exists below ₹{lower:.2f}, so the true minimum is in between."
+            )
     if not blockers:
         lines.append("More than one rule conflicts at once. Try a higher budget together with a wider diet option.")
     return lines
