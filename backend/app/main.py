@@ -64,6 +64,14 @@ def on_startup() -> None:
 
     register_realtime_handlers()
 
+    # Pre-solve the default menu plan in the background so the first visitor
+    # after a cold start (Render free tier sleeps) gets an instant answer.
+    import threading
+
+    from app.kitchen.planner import warm_up
+
+    threading.Thread(target=warm_up, name="menu-planner-warm-up", daemon=True).start()
+
 
 @app.on_event("shutdown")
 def on_shutdown() -> None:
