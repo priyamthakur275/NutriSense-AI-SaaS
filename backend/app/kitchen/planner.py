@@ -230,7 +230,7 @@ class _Model:
             return float(np.ceil(res.x[n] * 100) / 100)
         return None
 
-    def solve(self, goal: str, time_limit: float = 3.0, **build_kwargs):
+    def solve(self, goal: str, time_limit: float = 3.0, gap: float = 0.02, **build_kwargs):
         import numpy as np
         from scipy.optimize import Bounds, LinearConstraint, milp
 
@@ -240,7 +240,7 @@ class _Model:
             constraints=LinearConstraint(A, lo, hi),
             integrality=np.ones(self.D * self.J),
             bounds=Bounds(0, 1),
-            options={"time_limit": time_limit, "mip_rel_gap": 0.02},
+            options={"time_limit": time_limit, "mip_rel_gap": gap},
         )
         return res, A.shape
 
@@ -259,8 +259,19 @@ def plan_menu(req: PlanRequest) -> PlanResult:
     dishes = _candidate_dishes(req)
     model = _Model(req, preset, dishes)
 
+    # Two phases, so a slow server still returns a valid menu quickly:
+    #   1. feasibility: find *any* menu that satisfies every rule (fast), or
+    #      prove that none exists;
+    #   2. optimisation: improve it for a bounded time and keep the best
+    #      menu found (HiGHS returns its incumbent at the time limit).
     started = time.perf_counter()
-    res, shape = model.solve(req.goal)
+    feas, shape = model.solve("feasibility", time_limit=6.0, gap=0.0)
+    res, status = feas, "valid (not optimised)"
+    if feas.x is not None:
+        opt, _ = model.solve(req.goal, time_limit=4.0, gap=0.05)
+        if opt.x is not None:
+            res = opt
+            status = "optimal (within 5%)" if opt.status == 0 else "best found in time limit"
     elapsed_ms = (time.perf_counter() - started) * 1000
 
     targets = {
@@ -276,12 +287,10 @@ def plan_menu(req: PlanRequest) -> PlanResult:
         "constraints": int(shape[0]),
         "candidate_dishes": len(dishes),
         "solve_ms": round(elapsed_ms, 1),
-        # status 0 = proven optimal; 1 = time limit hit but a valid menu was
-        # found (returned as "near-optimal", every rule is still satisfied).
-        "status": {0: "optimal", 1: "near-optimal (time limit)", 2: "infeasible"}.get(res.status, res.message),
+        "status": status if res.x is not None else ("infeasible" if feas.status == 2 else "no menu found in time"),
     }
 
-    if res.status not in (0, 1) or res.x is None:
+    if res.x is None:
         blockers, cheapest = _diagnose(model, req)
         return PlanResult(
             feasible=False, days=[], average_cost=0.0, targets=targets,
@@ -316,7 +325,7 @@ def _diagnose(model: _Model, req: PlanRequest) -> tuple[list[str], float | None]
     groups = ["budget", "variety", "energy", *model.preset.minimums.keys()]
     blockers = []
     for g in groups:
-        res, _ = model.solve("feasibility", time_limit=2.0, skip=frozenset({g}))
+        res, _ = model.solve("feasibility", time_limit=1.5, gap=0.0, skip=frozenset({g}))
         if res.status in (0, 1) and res.x is not None:
             blockers.append(g)
 

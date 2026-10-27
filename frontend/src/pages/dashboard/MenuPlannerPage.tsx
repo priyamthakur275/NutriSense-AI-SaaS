@@ -116,9 +116,12 @@ export default function MenuPlannerPage() {
               Serve roti every day
             </label>
           </div>
-          <Button onClick={() => plan.mutate()} loading={plan.isPending} className="h-11 px-6">
-            Plan the week
-          </Button>
+          <div className="flex flex-col items-start gap-1.5 md:items-end">
+            <Button onClick={() => plan.mutate()} loading={plan.isPending} className="h-11 px-6">
+              {plan.isPending ? "Solving…" : "Plan the week"}
+            </Button>
+            {plan.isPending && <span className="text-xs text-muted-foreground">Checking every combination; this takes a few seconds.</span>}
+          </div>
         </div>
       </Panel>
 
