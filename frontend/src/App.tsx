@@ -25,6 +25,9 @@ const ReportsPage = lazy(() => import("@/pages/dashboard/ReportsPage"));
 const NotificationsPage = lazy(() => import("@/pages/dashboard/NotificationsPage"));
 const SettingsPage = lazy(() => import("@/pages/dashboard/SettingsPage"));
 const ProfilePage = lazy(() => import("@/pages/dashboard/ProfilePage"));
+const WastePage = lazy(() => import("@/pages/dashboard/WastePage"));
+const MenuPlannerPage = lazy(() => import("@/pages/dashboard/MenuPlannerPage"));
+const ForecastPage = lazy(() => import("@/pages/dashboard/ForecastPage"));
 
 function DashboardPageFallback() {
   return (
@@ -78,6 +81,9 @@ export default function App() {
               <Route path="notifications" element={<Suspense fallback={<DashboardPageFallback />}><NotificationsPage /></Suspense>} />
               <Route path="settings" element={<Suspense fallback={<DashboardPageFallback />}><SettingsPage /></Suspense>} />
               <Route path="profile" element={<Suspense fallback={<DashboardPageFallback />}><ProfilePage /></Suspense>} />
+              <Route path="waste" element={<Suspense fallback={<DashboardPageFallback />}><WastePage /></Suspense>} />
+              <Route path="menu-planner" element={<Suspense fallback={<DashboardPageFallback />}><MenuPlannerPage /></Suspense>} />
+              <Route path="forecast" element={<Suspense fallback={<DashboardPageFallback />}><ForecastPage /></Suspense>} />
             </Route>
           </Route>
 

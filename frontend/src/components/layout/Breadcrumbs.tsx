@@ -9,6 +9,14 @@ const labelMap: Record<string, string> = {
   recommendations: "Recommendations",
   reports: "Reports",
   settings: "Settings",
+  students: "Students",
+  nutrition: "Nutrition",
+  "ai-insights": "AI insights",
+  notifications: "Notifications",
+  profile: "Profile",
+  waste: "Food waste",
+  "menu-planner": "Menu planner",
+  forecast: "Cooking forecast",
 };
 
 export function Breadcrumbs() {

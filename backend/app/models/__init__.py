@@ -39,6 +39,7 @@ from app.models.student import Student
 from app.models.user import User, UserRole
 from app.models.user_invite import UserInvite
 from app.models.user_settings import UserSettings
+from app.models.kitchen import KitchenService, KitchenServiceDish
 
 __all__ = [
     "AIRecommendation",
@@ -55,6 +56,8 @@ __all__ = [
     "EmailVerificationToken",
     "Institution",
     "InstitutionSettings",
+    "KitchenService",
+    "KitchenServiceDish",
     "Meal",
     "MealImage",
     "Notification",
