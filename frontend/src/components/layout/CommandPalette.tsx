@@ -12,18 +12,20 @@ import {
   Moon,
   Sun,
   LogOut,
-  Search,
-} from "lucide-react";
+  Search, Recycle, CalendarDays, ChefHat } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 import { useThemeStore } from "@/store/themeStore";
 import { useAuthStore } from "@/store/authStore";
 
 const navCommands = [
   { label: "Overview", to: "/dashboard", icon: LayoutDashboard },
+  { label: "Food waste", to: "/dashboard/waste", icon: Recycle },
+  { label: "Menu planner", to: "/dashboard/menu-planner", icon: CalendarDays },
+  { label: "Cooking forecast", to: "/dashboard/forecast", icon: ChefHat },
   { label: "Meals", to: "/dashboard/meals", icon: Camera },
   { label: "Compliance", to: "/dashboard/compliance", icon: ShieldCheck },
-  { label: "Attendance", to: "/dashboard/attendance", icon: Users },
-  { label: "Recommendations", to: "/dashboard/recommendations", icon: Bot },
+  { label: "Students", to: "/dashboard/students", icon: Users },
+  { label: "AI insights", to: "/dashboard/ai-insights", icon: Bot },
   { label: "Reports", to: "/dashboard/reports", icon: FileBarChart },
   { label: "Settings", to: "/dashboard/settings", icon: Settings },
 ];

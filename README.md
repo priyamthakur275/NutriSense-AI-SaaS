@@ -8,6 +8,14 @@ NutriSense AI is an enterprise-grade SaaS platform designed to manage institutio
 
 ## Key Features
 
+**Kitchen intelligence** (details and interview notes: [docs/KITCHEN_INTELLIGENCE.md](docs/KITCHEN_INTELLIGENCE.md)):
+
+- **Food waste tracker:** separates over-production (left in the pot) from plate waste, shows ₹ lost, worst dishes, and the gap between nutrients served and nutrients eaten. Optional AI before/after tray-photo scan.
+- **Budget-aware menu planner:** a mixed-integer linear program (SciPy/HiGHS) picks a week of dishes meeting ICMR-NIN / PM POSHAN targets under a per-plate budget, and explains the minimum budget when a request is impossible.
+- **Cooking forecast:** headcount forecast with weekly pattern, trend and 80% range, converted into kilos per dish; accuracy measured by walk-forward backtesting against a "same as last week" baseline.
+
+Platform:
+
 - **Enterprise Dashboard:** Visualization of nutritional trends, meal tracking, and operational analytics.
 - **AI-Powered Recommendation & Vision Engine:** Gemini and OpenAI support for automated risk detection, meal photo nutrition extraction via computer vision, anomaly flagging, and personalized dietary guidance.
 - **Compliance & Audit Reporting:** Regulatory tracking, exportable PDFs/CSVs, automated audit logging, and scheduled report distributions.
@@ -70,44 +78,20 @@ NutriSense-AI/
 
 ## Getting Started
 
-### Backend
+One command sets up and runs everything (Python 3.10–3.14, Node 18+; no database install needed, it uses SQLite locally):
 
 ```bash
-cd backend
-python -m venv venv
-
-# Windows
-.\venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-
-pip install -r requirements.txt
-cp .env.example .env
-alembic upgrade head
-uvicorn app.main:app --reload --port 8000
+python3 run.py        # Windows: py run.py   ·   VS Code: Ctrl+Shift+B
 ```
 
-Swagger UI: `http://localhost:8000/docs`
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-cp .env.example .env
-npm run dev
-```
-
-Frontend: `http://localhost:5173`
+App: `http://localhost:5173` · API docs: `http://127.0.0.1:8000/docs`. See [START_HERE.md](START_HERE.md) for troubleshooting.
 
 ---
 
 ## Testing
 
 ```bash
-cd backend
-pytest
+backend/.venv/bin/python -m pytest backend/tests -q     # 79 tests
 ```
 
 ---

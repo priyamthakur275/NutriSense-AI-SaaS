@@ -17,6 +17,7 @@ from app.api.v1.endpoints import (
     institution_settings,
     institutions,
     invites,
+    kitchen,
     meal_images,
     meals,
     notifications,
@@ -58,4 +59,5 @@ api_router.include_router(announcements.router)
 api_router.include_router(invites.router)
 api_router.include_router(admin.router)
 api_router.include_router(chat_rooms.router)
+api_router.include_router(kitchen.router)
 api_router.include_router(ws.router)

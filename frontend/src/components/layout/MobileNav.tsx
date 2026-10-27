@@ -2,6 +2,9 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  Recycle,
+  CalendarDays,
+  ChefHat,
   Bell,
   X,
   Camera,
@@ -21,6 +24,9 @@ import { LogoutConfirmModal } from "@/components/layout/LogoutConfirmModal";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, end: true },
+  { label: "Food waste", to: "/dashboard/waste", icon: Recycle },
+  { label: "Menu planner", to: "/dashboard/menu-planner", icon: CalendarDays },
+  { label: "Cooking forecast", to: "/dashboard/forecast", icon: ChefHat },
   { label: "Students", to: "/dashboard/students", icon: Users },
   { label: "Meals", to: "/dashboard/meals", icon: Camera },
   { label: "Nutrition", to: "/dashboard/nutrition", icon: Leaf },

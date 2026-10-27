@@ -1,6 +1,9 @@
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
+  Recycle,
+  CalendarDays,
+  ChefHat,
   Leaf,
   User,
   ShieldCheck,
@@ -20,6 +23,9 @@ import { Tooltip, TooltipProvider } from "@/components/ui/Tooltip";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, end: true },
+  { label: "Food waste", to: "/dashboard/waste", icon: Recycle },
+  { label: "Menu planner", to: "/dashboard/menu-planner", icon: CalendarDays },
+  { label: "Cooking forecast", to: "/dashboard/forecast", icon: ChefHat },
   { label: "Students", to: "/dashboard/students", icon: Users },
   { label: "Meals", to: "/dashboard/meals", icon: Camera },
   { label: "Nutrition", to: "/dashboard/nutrition", icon: Leaf },
