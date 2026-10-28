@@ -33,7 +33,7 @@ NutriSense AI is an enterprise-grade SaaS platform designed to manage institutio
 - **Database**: PostgreSQL
 - **ORM**: SQLAlchemy
 - **Authentication**: JWT & OAuth2 Password Bearer
-- **AI Processing**: Integration with LLM via structured JSON (Anthropic/OpenAI compatible hooks)
+- **AI Processing**: Integration with LLM via structured JSON (Gemini/OpenAI provider layer with failover)
 
 ## Folder Structure
 
@@ -124,7 +124,6 @@ CORS_ORIGINS=["http://localhost:5173", "http://localhost:3000"]
 
 # AI ENGINE
 OPENAI_API_KEY=your-api-key-here
-ANTHROPIC_API_KEY=your-api-key-here
 """
 
 license_content = """MIT License

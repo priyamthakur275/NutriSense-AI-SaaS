@@ -1,7 +1,7 @@
 """Provider selection and failover.
 
 `get_provider(name)` is the one place that maps a provider name string to
-a concrete class — adding Claude or a local model later means adding one
+a concrete class — adding another provider or a local model later means adding one
 entry to `_BUILDERS` here; nothing else in the AI module changes.
 
 `call_with_failover` is what business logic (vision/nutrition/recommendation/

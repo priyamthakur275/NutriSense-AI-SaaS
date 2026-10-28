@@ -1,5 +1,5 @@
 """Provider-agnostic LLM interface. Every concrete provider (Gemini, OpenAI,
-and anything added later — Claude, a local model) implements this same
+and anything added later, such as a local model) implements this same
 `LLMProvider` Protocol, so nothing in the vision/nutrition/recommendation/
 chat services ever imports a provider-specific SDK type or branches on
 "which provider is this". Business logic depends only on this module.
